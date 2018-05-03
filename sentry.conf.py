@@ -33,6 +33,16 @@
 #  GITHUB_API_SECRET
 #  BITBUCKET_CONSUMER_KEY
 #  BITBUCKET_CONSUMER_SECRET
+
+# - Inclure our specific code here: this allow easier (painless?) merge from upstream fork
+
+# Use dotenv to fill the os.environ dict and preserve the default behaviour of the project
+# This needs to be before `from sentry.conf.server import *` as it uses env() already
+from dotenv import load_dotenv
+load_dotenv(dotenv_path='/etc/autoguard/settings/.env')  # WARNING: must fit ansible rule
+
+# - Do not write after this line except for settings override -----------------------------
+
 from sentry.conf.server import *  # NOQA
 
 import os
@@ -304,3 +314,22 @@ if 'GITHUB_APP_ID' in os.environ:
 if 'BITBUCKET_CONSUMER_KEY' in os.environ:
     BITBUCKET_CONSUMER_KEY = env('BITBUCKET_CONSUMER_KEY')
     BITBUCKET_CONSUMER_SECRET = env('BITBUCKET_CONSUMER_SECRET')
+
+
+# Our specific configuration
+TIME_ZONE = env('SENTRY_TIME_ZONE', 'Europe/Paris')  # Why not UTC ?
+LANGUAGE_CODE = env('SENTRY_LANGUAGE_CODE', 'fr-FR')
+
+ALLOWED_HOSTS = env('SENTRY_ALLOWED_HOSTS', ["localhost", "127.0.0.1", "0.0.0.0"])
+SENTRY_DISALLOWED_IPS = env('SENTRY_DISALLOWED_IPS', [])
+SENTRY_OPTIONS['system.url-prefix'] = env('SENTRY_URL_PREFIX')
+
+# Number of workers
+SENTRY_WEB_OPTIONS['workers'] = env('SENTRY_WEB_WORKERS', 3)
+
+# E-mail subjects prefix
+SENTRY_OPTIONS['mail.subject-prefix'] = env('SENTRY_EMAIL_SUBJECT_PREFIX')
+
+# Features
+SENTRY_FEATURES['auth:register'] = env('SENTRY_AUTH_REGISTER', False)  # True by default
+SENTRY_FEATURES['organizations:sso-saml2'] = env('SENTRY_ORGANIZATIONS_SSO_SAML', True)  # False by default
